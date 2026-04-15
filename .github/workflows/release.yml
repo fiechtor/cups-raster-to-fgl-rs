@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'        # Triggers on tags like v1.0.0
+  # Optional: workflow_dispatch for manual triggers
+
+permissions:
+  contents: write    # Required to create releases and upload assets
+
+jobs:
+  build:
+    name: Build for ${{ matrix.platform.target }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { os: ubuntu-latest,   target: x86_64-unknown-linux-musl,   artifact: myapp-linux-x86_64.tar.gz,   bin: myapp }
+          - { os: windows-latest,  target: x86_64-pc-windows-msvc,      artifact: myapp-windows-x86_64.zip,   bin: myapp.exe }
+          - { os: macos-latest,    target: x86_64-apple-darwin,         artifact: myapp-macos-x86_64.tar.gz,  bin: myapp }
+          - { os: macos-latest,    target: aarch64-apple-darwin,        artifact: myapp-macos-aarch64.tar.gz, bin: myapp }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      # Linux-specific: musl tools for static linking
+      - name: Install musl tools (Linux)
+        if: contains(matrix.platform.target, 'linux-musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.platform.target }} --locked
+
+      # Optional: Strip debug symbols to reduce size (skip for Windows cross or some cases)
+      - name: Strip binary (non-Windows)
+        if: runner.os != 'Windows'
+        run: strip target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
+
+      - name: Package artifact
+        shell: bash
+        run: |
+          cd target/${{ matrix.platform.target }}/release
+          if [[ "${{ matrix.platform.os }}" == "windows-latest" ]]; then
+            7z a ../../../${{ matrix.platform.artifact }} ${{ matrix.platform.bin }}
+          else
+            tar czvf ../../../${{ matrix.platform.artifact }} ${{ matrix.platform.bin }}
+          fi
+          cd -
+
+      - name: Generate SHA256 checksum
+        run: sha256sum ${{ matrix.platform.artifact }} > ${{ matrix.platform.artifact }}.sha256sum
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform.artifact }}
+          path: |
+            ${{ matrix.platform.artifact }}
+            ${{ matrix.platform.artifact }}.sha256sum
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*
+          body: |
+            ## Changelog
+            <!-- Add your release notes here or generate them automatically -->
