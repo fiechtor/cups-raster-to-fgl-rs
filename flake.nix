@@ -2,7 +2,6 @@
   description = "Rust flake";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     naersk = {
       url = "github:nix-community/naersk";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -40,21 +39,5 @@
 
       buildInputs = with pkgs; [rustc cargo rustfmt rust-analyzer];
     };
-
-    # packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
-    #   pname = "freightstation-service";
-    #   version = "0.1.0";
-    #   src = ./.;
-    #   cargoLock.lockFile = ./Cargo.lock;
-    #   cargoArtifact = [
-    #     "bin:server"
-    #     "bin:tui"
-    #   ];
-    #
-    #   nativeBuildInputs = with pkgs; [pkg-config gcc];
-    #   buildInputs = with pkgs; [rustc cargo rustfmt rust-analyzer pcsclite clang pkg-config rustPlatform.bindgenHook cups chafa dbus pkg-config openssl];
-    #   RUSTFLAGS = "-C link-arg=-L${pkgs.pcsclite}/lib -C link-arg=-Wl,-rpath,${pkgs.pcsclite}/lib -C link-arg=-L${pkgs.libusb1}/lib -C link-arg=-Wl,-rpath,${pkgs.libusb1}/lib -C link-arg=-L${pkgs.chafa}/lib -C link-arg=-Wl,-rpath,${pkgs.chafa}/lib";
-    #   inputsFrom = [pkgs.pcsclite pkgs.libusb1 pkgs.chafa];
-    # };
   };
 }

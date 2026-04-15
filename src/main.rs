@@ -1,6 +1,8 @@
-use std::fs::File;
-use std::io::{self, Read, Write};
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{self, Read, Write},
+    path::Path,
+};
 
 use clap::Parser;
 
