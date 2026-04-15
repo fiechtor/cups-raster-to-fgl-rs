@@ -17,10 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - { os: ubuntu-latest,   target: x86_64-unknown-linux-musl,   artifact: myapp-linux-x86_64.tar.gz,   bin: myapp }
-          - { os: windows-latest,  target: x86_64-pc-windows-msvc,      artifact: myapp-windows-x86_64.zip,   bin: myapp.exe }
-          - { os: macos-latest,    target: x86_64-apple-darwin,         artifact: myapp-macos-x86_64.tar.gz,  bin: myapp }
-          - { os: macos-latest,    target: aarch64-apple-darwin,        artifact: myapp-macos-aarch64.tar.gz, bin: myapp }
+          - { os: ubuntu-latest,   target: x86_64-unknown-linux-musl,   artifact: cups-raster-to-fgl-rs-linux-x86_64.tar.gz,   bin: cups-raster-to-fgl-rs }
+          - { os: windows-latest,  target: x86_64-pc-windows-msvc,      artifact: cups-raster-to-fgl-rs-windows-x86_64.zip,   bin: cups-raster-to-fgl-rs.exe }
+          - { os: macos-latest,    target: x86_64-apple-darwin,         artifact: cups-raster-to-fgl-rs-macos-x86_64.tar.gz,  bin: cups-raster-to-fgl-rs }
+          - { os: macos-latest,    target: aarch64-apple-darwin,        artifact: cups-raster-to-fgl-rs-macos-aarch64.tar.gz, bin: cups-raster-to-fgl-rs }
 
     steps:
       - name: Checkout code
